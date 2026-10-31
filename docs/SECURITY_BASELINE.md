@@ -164,7 +164,7 @@ frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none';
 
 | ID | Requirement | Phase | Status |
 |---|---|---|---|
-| D1 | Three DB roles: `llx_migrator` (DDL, used only in the migration step), `llx_app` (DML only), `llx_readonly` (reporting). No superuser in the app | 1 | Open |
+| D1 | Three DB roles: `lli_migrator` (DDL, used only in the migration step), `lli_app` (DML only), `lli_readonly` (reporting). No superuser in the app | 1 | Open |
 | D2 | `CHECK` constraints for stock, money, status; FKs; `statement_timeout`, `idle_in_transaction_session_timeout` | 1 | Open |
 | D3 | TLS to PostgreSQL if not on loopback; `pg_hba.conf` limited to app host/security group | 1, 10 | Open |
 | D4 | Encrypted storage; encrypted, access-controlled backups; documented restore with a tested drill | 9–10 | Open |

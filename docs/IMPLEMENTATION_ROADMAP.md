@@ -15,9 +15,9 @@ Companion to `PROJECT_AUDIT.md` and `SYSTEM_ARCHITECTURE.md`. Updated at the end
 
 | Phase | Name | Status |
 |---|---|---|
-| 0 | Audit and architecture | **Documents written; awaiting your answers to §3 before Phase 1** |
-| 0.5 | Repository hygiene | **Done and pushed** to `chore/phase-0.5-hygiene` (6 commits, PR into `main` not yet opened/merged) — see §2a |
-| 1 | Database foundation | Not started |
+| 0 | Audit and architecture | **Done** (documents merged to `main`) |
+| 0.5 | Repository hygiene | **Done and merged** (PR #1, rebase-merged into `main`) — see §2a |
+| 1 | Database foundation | **In progress** — schema, migrations, roles/grants, seed, rollback and docs drafted and tested on an in-memory PostgreSQL; read-only inventory of the server done (LLI is empty). **Nothing applied to any real database**; see DATABASE_MIGRATION_PLAN.md. Remaining: catalogue dev seed, PG13 rehearsal, your approval to apply (G1) |
 | 2 | Backend foundation and security | Not started |
 | 3 | Catalogue and administration | Not started |
 | 4 | Shopping operations | Not started |
@@ -80,7 +80,7 @@ Exit: `tsc`, `eslint`, `vitest`, `vite build` all green; `npm audit` clean or ea
 5. `chore: upgrade vite and zod to patched versions`.
 6. `docs: Phase 0 audit, architecture, roadmap, security baseline`.
 
-Pushed to `chore/phase-0.5-hygiene` (tip `da8fb8e`), based on `main` at `cee0edc`. The pull request into `main` is still to be opened and reviewed: https://github.com/iaakash25/lli/pull/new/chore/phase-0.5-hygiene. Tracked files were scanned for common secret patterns and sensitive filenames before the push: none found.
+Merged to `main` via PR #1 (rebase and merge); the feature branch was deleted. Tracked files were scanned for common secret patterns and sensitive filenames before the push: none found.
 
 ### Phase 1 — Database foundation
 
