@@ -20,6 +20,26 @@ dist-ssr
 .wrangler/
 .dev.vars
 
+# Secrets and environment files (templates are allowed)
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.cer
+id_rsa*
+id_ed25519*
+secrets/
+
+# Deployment tooling and test output
+.vercel/
+coverage/
+*.tsbuildinfo
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
