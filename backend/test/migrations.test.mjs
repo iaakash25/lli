@@ -387,7 +387,11 @@ describe("reference seed", () => {
 
 describe("roles and grants script", () => {
   it("applies (minus database-level statements) and enforces the intended privileges", async () => {
-    let sql = readFileSync(join(backendDir, "db", "roles_and_grants.sql"), "utf8");
+    // Normalise line endings: git on Windows may check the file out with CRLF.
+    let sql = readFileSync(join(backendDir, "db", "roles_and_grants.sql"), "utf8").replaceAll(
+      "\r\n",
+      "\n",
+    );
     sql = sql
       .replace(/^\\set .*$/gm, "") // psql meta-command
       .replace(/DO \$\$\nBEGIN\n  IF current_database\(\)[\s\S]*?\$\$;/, "") // LLI-only guard (pglite's db is "postgres")
