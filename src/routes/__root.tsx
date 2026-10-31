@@ -84,7 +84,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Leather Lux India — Contemporary Leather House" },
-      { name: "description", content: "Bags, wallets, belts and small leather goods from a contemporary leather house." },
+      {
+        name: "description",
+        content: "Bags, wallets, belts and small leather goods from a contemporary leather house.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -96,7 +99,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=Hanken+Grotesk:wght@300;400;500;600&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=Hanken+Grotesk:wght@300;400;500;600&display=swap",
+      },
     ],
   }),
   shellComponent: RootShell,
@@ -126,15 +132,30 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <StoreProvider>
-        <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:bg-ink focus:px-4 focus:py-2 focus:text-chalk">Skip to content</a>
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:bg-ink focus:px-4 focus:py-2 focus:text-chalk"
+        >
+          Skip to content
+        </a>
         <Header />
-        <main id="main"><Outlet /></main>
+        <main id="main">
+          <Outlet />
+        </main>
         <Footer />
         <CartDrawer />
         <WishlistDrawer />
         <SearchOverlay />
         <MobileMenu />
-        <Toaster position="bottom-center" toastOptions={{ classNames: { toast: "!rounded-none !bg-ink !text-chalk !border-0 !font-sans", description: "!text-chalk/70" } }} />
+        <Toaster
+          position="bottom-center"
+          toastOptions={{
+            classNames: {
+              toast: "!rounded-none !bg-ink !text-chalk !border-0 !font-sans",
+              description: "!text-chalk/70",
+            },
+          }}
+        />
       </StoreProvider>
     </QueryClientProvider>
   );
