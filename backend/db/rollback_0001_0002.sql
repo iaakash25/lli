@@ -5,7 +5,11 @@
 --
 -- Refuses to run unless connected to the LLI database, and refuses to run if any business table
 -- holds rows (set lli.allow_data_loss = on in the session to override, after a verified backup).
--- Leaves the pg_trgm extension and _prisma_migrations bookkeeping alone.
+-- Also removes the two rows from Prisma's _prisma_migrations table; otherwise `prisma migrate deploy`
+-- would report "No pending migrations" and leave the database empty (found in the PG 13 rehearsal).
+-- Leaves the pg_trgm extension alone.
+
+BEGIN;
 
 DO $$
 DECLARE
@@ -101,3 +105,13 @@ DROP TYPE IF EXISTS "user_status";
 
 DROP FUNCTION IF EXISTS lli_reject_modification();
 DROP FUNCTION IF EXISTS lli_check_order_transition();
+
+DO $$
+BEGIN
+  IF to_regclass('public._prisma_migrations') IS NOT NULL THEN
+    DELETE FROM public._prisma_migrations WHERE migration_name IN ('0001_init', '0002_constraints');
+  END IF;
+END;
+$$;
+
+COMMIT;
