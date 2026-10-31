@@ -16,7 +16,7 @@ Companion to `PROJECT_AUDIT.md` and `SYSTEM_ARCHITECTURE.md`. Updated at the end
 | Phase | Name | Status |
 |---|---|---|
 | 0 | Audit and architecture | **Documents written; awaiting your answers to §3 before Phase 1** |
-| 0.5 | Repository hygiene | **Done locally; awaiting your approval to commit and push** — see §2a |
+| 0.5 | Repository hygiene | **Done and pushed** to `chore/phase-0.5-hygiene` (6 commits, PR into `main` not yet opened/merged) — see §2a |
 | 1 | Database foundation | Not started |
 | 2 | Backend foundation and security | Not started |
 | 3 | Catalogue and administration | Not started |
@@ -71,7 +71,7 @@ Exit: `tsc`, `eslint`, `vitest`, `vite build` all green; `npm audit` clean or ea
 - **D1 — repository `https://github.com/iaakash25/lli.git` (provided 2026-10-31).** Inspected read-only: one branch (`main`), one commit (`cee0edc`, "Initial commit"), one file (`README.md`). **No Lovable-synced history exists in it**, so the "never rewrite pushed history" constraint has nothing to protect there today. The local folder is linked to it as `origin` on branch `chore/phase-0.5-hygiene` (based on `cee0edc`); **nothing is committed or pushed**. Repository root = the folder that holds `package.json` (so Lovable, which expects the app at the repo root, remains compatible); `backend/` and `admin/` will be added as sibling folders.
 - **Open question:** the Lovable project is not connected to this repository (its content would otherwise be present). If you want two-way Lovable sync later, connect it deliberately; Lovable edits and these backend changes would then land on the same branch.
 
-**Proposed commit plan (awaiting approval; gate G8 is respected — no force-push, no rewrite):**
+**Commit plan — executed and pushed 2026-10-31 (gate G8 respected: no force-push, no rewrite, nothing pushed to `main`):**
 
 1. `chore: import Lovable prototype baseline` — the original 117-file tree, taken from the baseline snapshot (so the history shows the true "before").
 2. `chore: harden .gitignore, adopt npm only` — `.gitignore`, `.npmrc`, `package.json` metadata, removal of `bun.lock`.
@@ -80,7 +80,7 @@ Exit: `tsc`, `eslint`, `vitest`, `vite build` all green; `npm audit` clean or ea
 5. `chore: upgrade vite and zod to patched versions`.
 6. `docs: Phase 0 audit, architecture, roadmap, security baseline`.
 
-Pushed to `chore/phase-0.5-hygiene` for a pull request into `main`; no direct push to `main`.
+Pushed to `chore/phase-0.5-hygiene` (tip `da8fb8e`), based on `main` at `cee0edc`. The pull request into `main` is still to be opened and reviewed: https://github.com/iaakash25/lli/pull/new/chore/phase-0.5-hygiene. Tracked files were scanned for common secret patterns and sensitive filenames before the push: none found.
 
 ### Phase 1 — Database foundation
 
