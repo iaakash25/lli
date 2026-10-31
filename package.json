@@ -14,12 +14,13 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
+    "format:check": "prettier --check src vite.config.ts vitest.config.ts eslint.config.js",
     "test": "vitest run",
-    "test:watch": "vitest"
-  },
-  "overrides": {
-    "rolldown": "1.2.1"
+    "test:watch": "vitest",
+    "audit:prod": "npm audit --omit=dev --audit-level=high",
+    "verify": "npm run typecheck && npm run lint && npm run format:check && npm test && npm run build && npm run audit:prod"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
@@ -36,7 +37,7 @@
     "tailwindcss": "^4.2.1",
     "tw-animate-css": "^1.3.4",
     "vite-tsconfig-paths": "^6.0.2",
-    "zod": "^3.25.76"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
@@ -58,7 +59,7 @@
     "prettier": "^3.7.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
-    "vite": "8.1.5",
+    "vite": "8.3.5",
     "vitest": "^4.1.10"
   }
 }
