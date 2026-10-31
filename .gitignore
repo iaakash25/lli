@@ -50,3 +50,6 @@ coverage/
 *.njsproj
 *.sln
 *.sw?
+
+# Backend generated Prisma client
+backend/src/generated/

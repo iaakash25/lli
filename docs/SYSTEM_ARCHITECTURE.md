@@ -185,7 +185,7 @@ Detailed schema is produced in Phase 1 (`DATABASE_ERD.md`, `DATABASE_DICTIONARY.
 - Foreign keys everywhere; `CHECK` constraints for invariants (non-negative stock, `reserved <= on_hand`, valid status values, price ≥ 0); partial unique indexes for soft-deleted rows.
 - **Snapshots:** `order_items` copy name, SKU, variant attributes, unit price, tax, discount. Editing a product never alters history.
 - **Audit and security tables** are append-only: the application role has `INSERT`/`SELECT` only on `admin_audit_logs`; a trigger rejects `UPDATE`/`DELETE`.
-- **Roles (DB users):** `llx_migrator` (DDL, used only by the migration step), `llx_app` (DML on application tables), `llx_readonly` (reporting). The PostgreSQL superuser is never used by the application.
+- **Roles (DB users):** `lli_migrator` (DDL, used only by the migration step), `lli_app` (DML on application tables), `lli_readonly` (reporting). The PostgreSQL superuser is never used by the application.
 - **Connections:** pooled; `statement_timeout` and `idle_in_transaction_session_timeout` set; TLS required when the database is not on the same host.
 - **Search:** `tsvector` generated column + `pg_trgm` index on product name/SKU/tags. Revisit only if measured latency demands it.
 
