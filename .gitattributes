@@ -1,0 +1,5 @@
+# Keep line endings stable across platforms (Prettier and the SQL tests expect LF).
+* text=auto eol=lf
+*.jpg binary
+*.png binary
+*.webp binary

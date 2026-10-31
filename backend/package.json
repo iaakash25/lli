@@ -19,6 +19,7 @@
     "db:format": "prisma format",
     "db:generate": "prisma generate",
     "test": "node --test \"test/*.test.mjs\"",
-    "docs:db": "node scripts/generate-db-docs.mjs"
+    "docs:db": "node scripts/generate-db-docs.mjs",
+    "seed:dev:generate": "node scripts/generate-dev-catalogue-seed.mjs"
   }
 }
