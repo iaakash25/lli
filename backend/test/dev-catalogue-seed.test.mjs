@@ -5,9 +5,8 @@ import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { after, before, describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
-import { PGlite } from "@electric-sql/pglite";
-import { pg_trgm } from "@electric-sql/pglite/contrib/pg_trgm";
 import { buildDevCatalogueSql } from "../scripts/generate-dev-catalogue-seed.mjs";
+import { createDb } from "./helpers/db.mjs";
 import { loadCatalog } from "../scripts/lib/load-catalog.mjs";
 
 const backendDir = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -24,7 +23,7 @@ const count = (table) => n(`SELECT count(*)::int AS n FROM ${table}`);
 const runSeed = () => db.exec(`SET lli.allow_dev_seed = 'on';\n${seedSql}`);
 
 before(async () => {
-  db = new PGlite({ extensions: { pg_trgm } });
+  db = await createDb();
   const names = readdirSync(migrationsDir, { withFileTypes: true })
     .filter((d) => d.isDirectory())
     .map((d) => d.name)

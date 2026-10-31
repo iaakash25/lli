@@ -9,8 +9,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { after, before, describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
-import { PGlite } from "@electric-sql/pglite";
-import { pg_trgm } from "@electric-sql/pglite/contrib/pg_trgm";
+import { createDb, engine } from "./helpers/db.mjs";
 
 const migrationsDir = join(dirname(fileURLToPath(import.meta.url)), "..", "prisma", "migrations");
 const migrationNames = readdirSync(migrationsDir, { withFileTypes: true })
@@ -46,7 +45,7 @@ const newOrder = async (num, status = "PENDING_PAYMENT") =>
   );
 
 before(async () => {
-  db = new PGlite({ extensions: { pg_trgm } });
+  db = await createDb();
   for (const name of migrationNames) {
     await db.exec(readFileSync(join(migrationsDir, name, "migration.sql"), "utf8"));
   }
@@ -55,6 +54,19 @@ before(async () => {
 describe("migrations", () => {
   it("are present and ordered", () => {
     assert.deepEqual(migrationNames, ["0001_init", "0002_constraints"]);
+  });
+
+  it("are each wrapped in an explicit transaction", () => {
+    // Prisma does not wrap migration files in a transaction (verified on PostgreSQL 13.23): without
+    // BEGIN/COMMIT a mid-file failure leaves earlier statements applied.
+    for (const name of migrationNames) {
+      const sql = readFileSync(join(migrationsDir, name, "migration.sql"), "utf8").replaceAll(
+        "\r\n",
+        "\n",
+      );
+      assert.match(sql, /^BEGIN;\n/, `${name} must start with BEGIN;`);
+      assert.match(sql, /\nCOMMIT;\n$/, `${name} must end with COMMIT;`);
+    }
   });
 
   it("create the expected number of tables", async () => {
@@ -386,56 +398,65 @@ describe("reference seed", () => {
 });
 
 describe("roles and grants script", () => {
-  it("applies (minus database-level statements) and enforces the intended privileges", async () => {
-    // Normalise line endings: git on Windows may check the file out with CRLF.
-    let sql = readFileSync(join(backendDir, "db", "roles_and_grants.sql"), "utf8").replaceAll(
-      "\r\n",
-      "\n",
-    );
-    sql = sql
-      .replace(/^\\set .*$/gm, "") // psql meta-command
-      .replace(/DO \$\$\nBEGIN\n  IF current_database\(\)[\s\S]*?\$\$;/, "") // LLI-only guard (pglite's db is "postgres")
-      .replace(/^ALTER ROLE .* IN DATABASE .*$/gm, "") // needs a real "LLI" database
-      .replace(/^(REVOKE|GRANT) .* ON DATABASE .*$/gm, "")
-      .replace(/:'(\w+)'/g, "'test-only-password'");
-    await db.exec(sql);
+  // On a real server, roles are cluster-wide and this script is not re-runnable; the rehearsal runs
+  // the real script through psql and checks each role over its own connection instead.
+  const skipOnRealServer =
+    engine === "postgres" ? "roles are cluster-wide; covered by the psql rehearsal" : false;
 
-    const can = async (role, table, priv) =>
-      (await db.query(`SELECT has_table_privilege($1, $2, $3) AS ok`, [role, table, priv])).rows[0]
-        .ok;
+  it(
+    "applies (minus database-level statements) and enforces the intended privileges",
+    { skip: skipOnRealServer },
+    async () => {
+      // Normalise line endings: git on Windows may check the file out with CRLF.
+      let sql = readFileSync(join(backendDir, "db", "roles_and_grants.sql"), "utf8").replaceAll(
+        "\r\n",
+        "\n",
+      );
+      sql = sql
+        .replace(/^\\set .*$/gm, "") // psql meta-command
+        .replace(/DO \$\$\nBEGIN\n  IF current_database\(\)[\s\S]*?\$\$;/, "") // LLI-only guard (pglite's db is "postgres")
+        .replace(/^ALTER ROLE .* IN DATABASE .*$/gm, "") // needs a real "LLI" database
+        .replace(/^(REVOKE|GRANT) .* ON DATABASE .*$/gm, "")
+        .replace(/:'(\w+)'/g, "'test-only-password'");
+      await db.exec(sql);
 
-    assert.equal(await can("lli_app", "users", "UPDATE"), true);
-    assert.equal(await can("lli_app", "orders", "DELETE"), true);
-    for (const t of [
-      "admin_audit_logs",
-      "security_events",
-      "inventory_movements",
-      "order_status_history",
-    ]) {
-      assert.equal(await can("lli_app", t, "INSERT"), true, `${t} insert`);
-      assert.equal(await can("lli_app", t, "SELECT"), true, `${t} select`);
-      assert.equal(await can("lli_app", t, "UPDATE"), false, `${t} update`);
-      assert.equal(await can("lli_app", t, "DELETE"), false, `${t} delete`);
-      assert.equal(await can("lli_app", t, "TRUNCATE"), false, `${t} truncate`);
-    }
-    assert.equal(await can("lli_readonly", "products", "SELECT"), true);
-    assert.equal(await can("lli_readonly", "products", "UPDATE"), false);
-    for (const t of ["users", "sessions", "one_time_tokens", "mfa_credentials", "addresses"]) {
-      assert.equal(await can("lli_readonly", t, "SELECT"), false, `readonly must not read ${t}`);
-    }
-    const create = async (role) =>
-      (await db.query(`SELECT has_schema_privilege($1, 'public', 'CREATE') AS ok`, [role])).rows[0]
-        .ok;
-    assert.equal(await create("lli_migrator"), true);
-    assert.equal(await create("lli_app"), false);
-    assert.equal(await create("lli_readonly"), false);
+      const can = async (role, table, priv) =>
+        (await db.query(`SELECT has_table_privilege($1, $2, $3) AS ok`, [role, table, priv]))
+          .rows[0].ok;
 
-    const roles = await db.query(
-      `SELECT rolname, rolsuper, rolcreatedb, rolcreaterole FROM pg_roles WHERE rolname LIKE 'lli\_%'`,
-    );
-    assert.equal(roles.rows.length, 3);
-    assert.ok(roles.rows.every((r) => !r.rolsuper && !r.rolcreatedb && !r.rolcreaterole));
-  });
+      assert.equal(await can("lli_app", "users", "UPDATE"), true);
+      assert.equal(await can("lli_app", "orders", "DELETE"), true);
+      for (const t of [
+        "admin_audit_logs",
+        "security_events",
+        "inventory_movements",
+        "order_status_history",
+      ]) {
+        assert.equal(await can("lli_app", t, "INSERT"), true, `${t} insert`);
+        assert.equal(await can("lli_app", t, "SELECT"), true, `${t} select`);
+        assert.equal(await can("lli_app", t, "UPDATE"), false, `${t} update`);
+        assert.equal(await can("lli_app", t, "DELETE"), false, `${t} delete`);
+        assert.equal(await can("lli_app", t, "TRUNCATE"), false, `${t} truncate`);
+      }
+      assert.equal(await can("lli_readonly", "products", "SELECT"), true);
+      assert.equal(await can("lli_readonly", "products", "UPDATE"), false);
+      for (const t of ["users", "sessions", "one_time_tokens", "mfa_credentials", "addresses"]) {
+        assert.equal(await can("lli_readonly", t, "SELECT"), false, `readonly must not read ${t}`);
+      }
+      const create = async (role) =>
+        (await db.query(`SELECT has_schema_privilege($1, 'public', 'CREATE') AS ok`, [role]))
+          .rows[0].ok;
+      assert.equal(await create("lli_migrator"), true);
+      assert.equal(await create("lli_app"), false);
+      assert.equal(await create("lli_readonly"), false);
+
+      const roles = await db.query(
+        `SELECT rolname, rolsuper, rolcreatedb, rolcreaterole FROM pg_roles WHERE rolname LIKE 'lli\_%'`,
+      );
+      assert.equal(roles.rows.length, 3);
+      assert.ok(roles.rows.every((r) => !r.rolsuper && !r.rolcreatedb && !r.rolcreaterole));
+    },
+  );
 });
 
 describe("rollback script", () => {
@@ -454,19 +475,20 @@ describe("rollback script", () => {
 
   it("refuses to run against the real LLI-name guard from another database", async () => {
     const raw = readFileSync(join(backendDir, "db", "rollback_0001_0002.sql"), "utf8");
-    const scratch = new PGlite({ extensions: { pg_trgm } });
+    const scratch = await createDb();
     await applyAll(scratch);
     await assert.rejects(() => scratch.exec(raw), /expected LLI/);
     await scratch.close();
   });
 
   it("refuses to drop tables that hold data, and removes everything on an empty schema", async () => {
-    const scratch = new PGlite({ extensions: { pg_trgm } });
+    const scratch = await createDb();
     await applyAll(scratch);
     await scratch.exec(
       `INSERT INTO users (email, email_normalized) VALUES ('keep@example.com', 'keep@example.com')`,
     );
     await assert.rejects(() => scratch.exec(rollbackSql()), /holds 1 rows/);
+    await scratch.exec("ROLLBACK"); // the script's own BEGIN is left open by the refusal
     await scratch.exec(`DELETE FROM users`);
     await scratch.exec(rollbackSql());
 
@@ -493,6 +515,22 @@ describe("rollback script", () => {
     );
     // Re-applying proves the rollback left a clean slate.
     await applyAll(scratch);
+    await scratch.close();
+  });
+
+  it("clears its Prisma bookkeeping rows so migrate deploy re-applies the migrations", async () => {
+    const scratch = await createDb();
+    await applyAll(scratch);
+    await scratch.exec(`
+      CREATE TABLE _prisma_migrations (migration_name text PRIMARY KEY);
+      INSERT INTO _prisma_migrations VALUES ('0001_init'), ('0002_constraints'), ('0003_other');
+    `);
+    await scratch.exec(rollbackSql());
+    const rows = await scratch.query(`SELECT migration_name FROM _prisma_migrations ORDER BY 1`);
+    assert.deepEqual(
+      rows.rows.map((r) => r.migration_name),
+      ["0003_other"],
+    );
     await scratch.close();
   });
 });

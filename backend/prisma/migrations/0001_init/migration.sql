@@ -1,3 +1,5 @@
+BEGIN;
+
 
 -- CreateEnum
 CREATE TYPE "user_status" AS ENUM ('PENDING_VERIFICATION', 'ACTIVE', 'LOCKED', 'SUSPENDED', 'DELETED');
@@ -1188,3 +1190,5 @@ ALTER TABLE "ai_conversations" ADD CONSTRAINT "ai_conversations_user_id_fkey" FO
 
 -- AddForeignKey
 ALTER TABLE "ai_messages" ADD CONSTRAINT "ai_messages_conversation_id_fkey" FOREIGN KEY ("conversation_id") REFERENCES "ai_conversations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+COMMIT;

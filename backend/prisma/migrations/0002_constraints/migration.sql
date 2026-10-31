@@ -1,3 +1,5 @@
+BEGIN;
+
 -- 0002_constraints: what Prisma cannot express — extensions, CHECK constraints, partial unique
 -- indexes, generated search column, append-only triggers, order-state-machine guard.
 --
@@ -232,3 +234,5 @@ $$;
 
 CREATE TRIGGER orders_status_transition BEFORE UPDATE OF status ON orders
   FOR EACH ROW EXECUTE FUNCTION lli_check_order_transition();
+
+COMMIT;

@@ -17,7 +17,7 @@ Companion to `PROJECT_AUDIT.md` and `SYSTEM_ARCHITECTURE.md`. Updated at the end
 |---|---|---|
 | 0 | Audit and architecture | **Done** (documents merged to `main`) |
 | 0.5 | Repository hygiene | **Done and merged** (PR #1, rebase-merged into `main`) — see §2a |
-| 1 | Database foundation | **In progress** — schema, migrations, roles/grants, seed, rollback and docs drafted and tested on an in-memory PostgreSQL; read-only inventory of the server done (LLI is empty). **Nothing applied to any real database**; see DATABASE_MIGRATION_PLAN.md. Dev catalogue seed done (22 products, 72 variants). Remaining: PG13 rehearsal, your approval to apply (G1) |
+| 1 | Database foundation | **In progress** — schema, migrations, roles/grants, seed, rollback and docs drafted and tested on an in-memory PostgreSQL; read-only inventory of the server done (LLI is empty). **Nothing applied to any real database**; see DATABASE_MIGRATION_PLAN.md. Dev catalogue seed done (22 products, 72 variants). PostgreSQL 13.23 rehearsal done on a throwaway local server (4 problems found and fixed; see DATABASE_REHEARSAL_REPORT.md). Remaining: read-only server checks (collation, pg_hba), a verified backup, your approval to apply (G1) |
 | 2 | Backend foundation and security | Not started |
 | 3 | Catalogue and administration | Not started |
 | 4 | Shopping operations | Not started |
